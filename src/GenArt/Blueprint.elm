@@ -2,9 +2,7 @@ module GenArt.Blueprint exposing
     ( Blueprint
     , BlueprintState
     , ImageProperties
-    , IteratedBlueprint
     , IteratedState
-    , Rendering
     , RenderingState
     , Stateless
     , from1
@@ -17,7 +15,6 @@ module GenArt.Blueprint exposing
     , mapConfig
     , mapPalette
     , rendering
-    , stateless
     , withConfig
     , withRandomConfig
     )
@@ -63,15 +60,6 @@ type alias Blueprint config model form =
     }
 
 
-type alias IteratedBlueprint config model form =
-    { config : Generator { config : config, maxSteps : Int }
-    , init : config -> Generator model
-    , update : IteratedState config -> model -> Generator model
-    , view : IteratedState config -> ImageProperties -> model -> Generator (List form)
-    , toShape : config -> List form -> List Shape
-    }
-
-
 type alias Stateless config form =
     { config : Generator { config : config, maxSteps : Int }
     , view : IteratedState config -> ImageProperties -> Generator (List form)
@@ -79,13 +67,14 @@ type alias Stateless config form =
     }
 
 
-type alias Rendering config =
-    { config : Generator config
-    , view : RenderingState config -> ImageProperties -> Generator (List Shape)
+iterated :
+    { config : Generator { config : config, maxSteps : Int }
+    , init : config -> Generator model
+    , update : IteratedState config -> model -> Generator model
+    , view : IteratedState config -> ImageProperties -> model -> Generator (List form)
+    , toShape : config -> List form -> List Shape
     }
-
-
-iterated : IteratedBlueprint config model form -> Blueprint config model form
+    -> Blueprint config model form
 iterated blueprint =
     { config =
         blueprint.config
@@ -114,23 +103,18 @@ iterated blueprint =
     }
 
 
-stateless : Stateless config form -> Blueprint config {} form
-stateless s =
+rendering :
+    { config : Generator config
+    , view : RenderingState config -> ImageProperties -> Generator (List Shape)
+    }
+    -> Blueprint config {} Shape
+rendering r =
     iterated
-        { config = s.config
+        { config = r.config |> Random.map (\config -> { config = config, maxSteps = 1 })
         , init = \_ -> Random.constant {}
         , update = \_ model -> Random.constant model
-        , view = \state dimensions _ -> s.view state dimensions
-        , toShape = s.toShape
-        }
-
-
-rendering : Rendering config -> Blueprint config {} Shape
-rendering r =
-    stateless
-        { config = r.config |> Random.map (\config -> { config = config, maxSteps = 1 })
         , view =
-            \state imageProperties ->
+            \state imageProperties _ ->
                 r.view
                     { config = state.config
                     , permutationTable = state.permutationTable

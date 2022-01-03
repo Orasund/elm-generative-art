@@ -124,6 +124,8 @@ blendTo c2 amount c1 =
         |> Color.fromCIELCH
 
 
+{-| (-2pi,pi) -> (-pi,pi)
+-}
 hueCorrection : Float -> Float -> Float
 hueCorrection ah bh =
     if ah < bh && bh - ah > 0.5 then
