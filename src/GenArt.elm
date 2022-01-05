@@ -1,4 +1,4 @@
-module GenArt exposing (Dimensions, applyGenerator, applyRecursively, circle, grid, rect, regularPolygon, square)
+module GenArt exposing (Dimensions, applyGenerator, applyRecursively, arc, circle, grid, rect, regularPolygon, square)
 
 import Data.Point as Point
 import Random exposing (Generator, Seed)
@@ -31,12 +31,42 @@ circle radius p =
     regularPolygon { points = 2 * pi * radius / 0.05 |> round |> max 10, radius = radius } p
 
 
+circleStencil : Float -> ( Float, Float ) -> List (List ( Float, Float ))
+circleStencil radius ( x, y ) =
+    [ ( 0, [ ( 1, y ), ( 1, -1 ), ( x, -1 ) ] )
+    , ( 1 / 4, [ ( x, -1 ), ( -1, -1 ), ( -1, y ) ] )
+    , ( 1 / 2, [ ( -1, y ), ( -1, 1 ), ( x, 1 ) ] )
+    , ( 3 / 4, [ ( x, 1 ), ( 1, 1 ), ( 1, y ) ] )
+    ]
+        |> List.map
+            (\( angleOffset, list ) ->
+                arc
+                    { points = 20
+                    , radius = radius
+                    , angle = pi / 2
+                    , angleOffset = angleOffset * 2 * pi
+                    }
+                    ( x, y )
+                    ++ list
+            )
+
+
 regularPolygon : { points : Int, radius : Float } -> ( Float, Float ) -> List ( Float, Float )
-regularPolygon args p =
+regularPolygon args =
+    arc
+        { points = args.points
+        , radius = args.radius
+        , angle = 2 * pi
+        , angleOffset = 0
+        }
+
+
+arc : { points : Int, radius : Float, angle : Float, angleOffset : Float } -> ( Float, Float ) -> List ( Float, Float )
+arc args p =
     List.range 0 args.points
         |> List.map
             (\i ->
-                fromPolar ( args.radius, 2 * pi * toFloat i / toFloat args.points )
+                fromPolar ( args.radius, args.angleOffset + args.angle * toFloat i / toFloat args.points )
                     |> Point.toVec
                     |> Point.addTo p
             )
