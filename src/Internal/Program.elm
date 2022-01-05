@@ -204,7 +204,8 @@ viewCanvas dimensions model =
                         |> WebGL.toHtmlWith
                             [ WebGL.antialias
                             , WebGL.depth 1
-                            , WebGL.alpha True
+
+                            --, WebGL.alpha True
                             ]
                             [ Attributes.width (round dimensions.width)
                             , Attributes.height (round dimensions.height)
