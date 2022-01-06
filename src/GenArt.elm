@@ -28,7 +28,7 @@ rect ( x1, y1 ) ( x2, y2 ) =
 -}
 circle : Float -> ( Float, Float ) -> List ( Float, Float )
 circle radius p =
-    regularPolygon { points = 2 * pi * radius / 0.05 |> round |> max 10, radius = radius } p
+    regularPolygon { points = 2 * pi * radius / 0.05 |> round |> max 10, radius = radius, angleOffset = 0 } p
 
 
 circleStencil : Float -> ( Float, Float ) -> List ( ( Float, Float ), List ( Float, Float ) )
@@ -36,7 +36,7 @@ circleStencil radius ( x, y ) =
     [ { angleOffset = 0, list = [ ( x, 1 ), ( 1, 1 ), ( 1, y ) ], p = ( 1, 1 ) }
     , { angleOffset = 1 / 4, list = [ ( -1, y ), ( -1, 1 ), ( x, 1 ) ], p = ( -1, 1 ) }
     , { angleOffset = 2 / 4, list = [ ( x, -1 ), ( -1, -1 ), ( -1, y ) ], p = ( -1, -1 ) }
-    , { angleOffset = 3 / 4, list = [ ( 1, y ), ( 1, -1 ), ( x, -1 ) ], p = ( 1, -1 ) } --}
+    , { angleOffset = 3 / 4, list = [ ( 1, y ), ( 1, -1 ), ( x, -1 ) ], p = ( 1, -1 ) }
     ]
         |> List.map
             (\{ angleOffset, list, p } ->
@@ -53,14 +53,16 @@ circleStencil radius ( x, y ) =
             )
 
 
-regularPolygon : { points : Int, radius : Float } -> ( Float, Float ) -> List ( Float, Float )
-regularPolygon args =
-    arc
-        { points = args.points
-        , radius = args.radius
-        , angle = 2 * pi
-        , angleOffset = 0
-        }
+regularPolygon : { points : Int, radius : Float, angleOffset : Float } -> ( Float, Float ) -> List ( Float, Float )
+regularPolygon args p =
+    p
+        |> arc
+            { points = args.points
+            , radius = args.radius
+            , angle = 2 * pi
+            , angleOffset = args.angleOffset
+            }
+        |> List.take args.points
 
 
 arc : { points : Int, radius : Float, angle : Float, angleOffset : Float } -> ( Float, Float ) -> List ( Float, Float )
