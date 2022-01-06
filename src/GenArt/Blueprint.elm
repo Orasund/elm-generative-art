@@ -15,7 +15,6 @@ module GenArt.Blueprint exposing
     , mapConfig
     , mapPalette
     , rendering
-    , withConfig
     , withRandomConfig
     )
 
@@ -124,11 +123,6 @@ rendering r =
         }
 
 
-withConfig : { config : config, maxRecursions : Int } -> Blueprint config model form -> Blueprint config model form
-withConfig config =
-    withRandomConfig (config |> Random.constant)
-
-
 mapPalette : (Palette -> Palette) -> Blueprint config model form -> Blueprint config model form
 mapPalette fun animation =
     { animation
@@ -154,11 +148,22 @@ mapConfig fun animation =
 
 
 withRandomConfig :
-    Generator { config : config, maxRecursions : Int }
+    (config -> Generator config)
     -> Blueprint config model form
     -> Blueprint config model form
-withRandomConfig config animation =
-    { animation | config = config }
+withRandomConfig fun animation =
+    { animation
+        | config =
+            animation.config
+                |> Random.andThen
+                    (\{ config, maxRecursions } ->
+                        fun config
+                            |> Random.map
+                                (\c ->
+                                    { config = c, maxRecursions = maxRecursions }
+                                )
+                    )
+    }
 
 
 map :
