@@ -1,4 +1,4 @@
-module GenArt exposing (Dimensions, applyGenerator, applyRecursively, arc, circle, grid, rect, regularPolygon, square)
+module GenArt exposing (Dimensions, applyGenerator, applyRecursively, arc, circle, circleStencil, grid, rect, regularPolygon, square)
 
 import Data.Point as Point
 import Random exposing (Generator, Seed)
@@ -31,16 +31,17 @@ circle radius p =
     regularPolygon { points = 2 * pi * radius / 0.05 |> round |> max 10, radius = radius } p
 
 
-circleStencil : Float -> ( Float, Float ) -> List (List ( Float, Float ))
+circleStencil : Float -> ( Float, Float ) -> List ( ( Float, Float ), List ( Float, Float ) )
 circleStencil radius ( x, y ) =
-    [ ( 0, [ ( 1, y ), ( 1, -1 ), ( x, -1 ) ] )
-    , ( 1 / 4, [ ( x, -1 ), ( -1, -1 ), ( -1, y ) ] )
-    , ( 1 / 2, [ ( -1, y ), ( -1, 1 ), ( x, 1 ) ] )
-    , ( 3 / 4, [ ( x, 1 ), ( 1, 1 ), ( 1, y ) ] )
+    [ { angleOffset = 0, list = [ ( x, 1 ), ( 1, 1 ), ( 1, y ) ], p = ( 1, 1 ) }
+    , { angleOffset = 1 / 4, list = [ ( -1, y ), ( -1, 1 ), ( x, 1 ) ], p = ( -1, 1 ) }
+    , { angleOffset = 2 / 4, list = [ ( x, -1 ), ( -1, -1 ), ( -1, y ) ], p = ( -1, -1 ) }
+    , { angleOffset = 3 / 4, list = [ ( 1, y ), ( 1, -1 ), ( x, -1 ) ], p = ( 1, -1 ) } --}
     ]
         |> List.map
-            (\( angleOffset, list ) ->
-                arc
+            (\{ angleOffset, list, p } ->
+                ( p
+                , arc
                     { points = 20
                     , radius = radius
                     , angle = pi / 2
@@ -48,6 +49,7 @@ circleStencil radius ( x, y ) =
                     }
                     ( x, y )
                     ++ list
+                )
             )
 
 
