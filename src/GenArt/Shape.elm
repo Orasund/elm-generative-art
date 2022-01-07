@@ -6,9 +6,9 @@ module GenArt.Shape exposing
     , Uniforms
     , Varyings
     , Vertex
-    , convex
+    , fromConvexVertex
+    , fromPath
     , line
-    , path
     , paths
     , toCanvas
     , toWebGL
@@ -81,18 +81,11 @@ withPixelShader ( pixelShader, pixelArguments ) shape =
     { shape | pixelShader = pixelShader, pixelArguments = pixelArguments }
 
 
-path : Color -> List ( Float, Float ) -> Path
-path color list =
+fromPath : Color -> List ( Float, Float ) -> Path
+fromPath color list =
     { color = color
     , form = list
     }
-
-
-paths : List Path -> Shape
-paths list =
-    list
-        |> Internal.Shape.PathsForm
-        |> Internal.Shape.new
 
 
 line : { width : Float, color : Color } -> List ( Float, Float ) -> List Triangle
@@ -127,17 +120,10 @@ line args list =
         |> Internal.Shape.withColor args.color
 
 
-triangles : List { form : ( ( Float, Float ), ( Float, Float ), ( Float, Float ) ), color : Color } -> Shape
-triangles list =
-    list
-        |> Internal.Shape.TrianglesForm
-        |> Internal.Shape.new
-
-
 {-| If the points are convex, then no center point is needed to convert into triangles.
 -}
-convex : Color -> List ( Float, Float ) -> List { form : ( ( Float, Float ), ( Float, Float ), ( Float, Float ) ), color : Color }
-convex color l =
+fromConvexVertex : Color -> List ( Float, Float ) -> List { form : ( ( Float, Float ), ( Float, Float ), ( Float, Float ) ), color : Color }
+fromConvexVertex color l =
     (case l of
         a :: b :: _ ->
             l
@@ -181,6 +167,20 @@ trianglesAround a color l =
             []
     )
         |> Internal.Shape.withColor color
+
+
+paths : List Path -> Shape
+paths list =
+    list
+        |> Internal.Shape.PathsForm
+        |> Internal.Shape.new
+
+
+triangles : List { form : ( ( Float, Float ), ( Float, Float ), ( Float, Float ) ), color : Color } -> Shape
+triangles list =
+    list
+        |> Internal.Shape.TrianglesForm
+        |> Internal.Shape.new
 
 
 toWebGL : { seed : Int, dimensions : Dimensions, palette : Palette } -> Shape -> WebGL.Entity

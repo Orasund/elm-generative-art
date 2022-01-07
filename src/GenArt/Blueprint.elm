@@ -10,12 +10,13 @@ module GenArt.Blueprint exposing
     , from3
     , from4
     , from5
+    , fromShape
     , iterated
     , map
     , mapConfig
     , mapPalette
+    , mapRandomConfig
     , rendering
-    , withRandomConfig
     )
 
 import GenArt.Color exposing (Palette)
@@ -123,6 +124,14 @@ rendering r =
         }
 
 
+fromShape : Generator (List Shape) -> Blueprint {} {} Shape
+fromShape view =
+    rendering
+        { config = Random.constant {}
+        , view = \_ _ -> view
+        }
+
+
 mapPalette : (Palette -> Palette) -> Blueprint config model form -> Blueprint config model form
 mapPalette fun animation =
     { animation
@@ -147,11 +156,11 @@ mapConfig fun animation =
     }
 
 
-withRandomConfig :
+mapRandomConfig :
     (config -> Generator config)
     -> Blueprint config model form
     -> Blueprint config model form
-withRandomConfig fun animation =
+mapRandomConfig fun animation =
     { animation
         | config =
             animation.config
