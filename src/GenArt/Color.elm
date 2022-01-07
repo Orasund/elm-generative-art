@@ -1,4 +1,4 @@
-module GenArt.Color exposing (Palette, blendTo, create, fromCIELCH, toCIELCH, toVec, withLuminance, withOpacity, withSaturation)
+module GenArt.Color exposing (Palette, adjustLuminance, blendTo, create, fromCIELCH, toCIELCH, toVec, withOpacity, withSaturation)
 
 import Color exposing (Color)
 import Internal.Color as Color
@@ -49,13 +49,17 @@ create args =
         |> fromCIELCH
 
 
-{-| luminance according to visual light level
+{-| adjust luminance according to visual light level using the CIELCH color space
+
+Note having luminance = 0 is not the same as black and having luminance 1 is not the same as white.
+If you want to fade to black or white, you can use the blendTo function. But note that in that case the color will become more and more gray.
+
 -}
-withLuminance : Float -> Color -> Color
-withLuminance f c =
+adjustLuminance : Float -> Color -> Color
+adjustLuminance f c =
     c
         |> toCIELCH
-        |> (\c1 -> { c1 | l = f })
+        |> (\c1 -> { c1 | l = c1.l + c1.l * f |> clamp 0 1 })
         |> fromCIELCH
 
 
