@@ -62,6 +62,8 @@ circleStencil radius ( x, y ) =
             )
 
 
+{-| Constructs a regular polygon. angleOffset is between 0 and 2\*pi.
+-}
 regularPolygon : { points : Int, radius : Float, angleOffset : Float } -> ( Float, Float ) -> List ( Float, Float )
 regularPolygon args p =
     p
@@ -74,6 +76,8 @@ regularPolygon args p =
         |> List.take args.points
 
 
+{-| constructs an arc around a point
+-}
 arc : { points : Int, radius : Float, angle : Float, angleOffset : Float } -> ( Float, Float ) -> List ( Float, Float )
 arc args p =
     List.range 0 args.points
