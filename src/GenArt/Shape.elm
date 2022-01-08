@@ -1,6 +1,5 @@
 module GenArt.Shape exposing
-    ( Form
-    , Path
+    ( Path
     , Shape
     , Triangle
     , Uniforms
@@ -18,6 +17,10 @@ module GenArt.Shape exposing
     , withPixelShader
     , withVertexShader
     )
+
+{-| This modules is all about shapes. You can think of shapes as things that you can actually see on your seen. (Where as Vertices are very abstract)
+Under the hood the module actually only knows of two types of shapes: triangles and lines. Shapes that are filled in are made out of triangles and outlines are made out of lines.
+-}
 
 import Canvas
 import Canvas.Settings as Settings
@@ -55,10 +58,8 @@ type alias Shape =
     Internal.Shape.Shape
 
 
-type alias Form =
-    Internal.Shape.Form
-
-
+{-| Uniforms that can be used in WebGL shaders
+-}
 type alias Uniforms =
     { u_dimensions : Vec2
     , u_primary : Vec4
@@ -69,6 +70,8 @@ type alias Uniforms =
     }
 
 
+{-| Vertex for vertex shaders
+-}
 type alias Vertex =
     { position : Vec2
     , color : Vec4
@@ -76,21 +79,29 @@ type alias Vertex =
     }
 
 
+{-| Varyings for webGL shader
+-}
 type alias Varyings =
     { v_color : Vec4
     }
 
 
+{-| Adds a vertex shaders. This will only be used in combination with `toWebGL`
+-}
 withVertexShader : ( Shader Vertex Uniforms Varyings, Vec4 ) -> Shape -> Shape
 withVertexShader ( vertexShader, vertexArguments ) shape =
     { shape | vertexShader = vertexShader, vertexArguments = vertexArguments }
 
 
+{-| Adds a pixel shaders. This will only be used in combination with `toWebGL`
+-}
 withPixelShader : ( Shader {} Uniforms Varyings, Vec4 ) -> Shape -> Shape
 withPixelShader ( pixelShader, pixelArguments ) shape =
     { shape | pixelShader = pixelShader, pixelArguments = pixelArguments }
 
 
+{-| constructs a path from a list of points
+-}
 path : Color -> List ( Float, Float ) -> Path
 path color list =
     { color = color
@@ -98,6 +109,9 @@ path color list =
     }
 
 
+{-| constructs a line from a list of points and returns a list of triangles.
+It constructs roughly 4 triangles per line segment, so if a lot of lines need to be drawn it might be better to use a path instead.
+-}
 line : { width : Float, color : Color } -> List ( Float, Float ) -> List Triangle
 line args list =
     (case list of
@@ -179,6 +193,8 @@ starVertex a color l =
         |> Internal.Shape.withColor color
 
 
+{-| creates a Shape from a list of paths.
+-}
 fromPaths : List Path -> Shape
 fromPaths list =
     list
@@ -186,13 +202,17 @@ fromPaths list =
         |> Internal.Shape.new
 
 
-fromTriangles : List { form : ( ( Float, Float ), ( Float, Float ), ( Float, Float ) ), color : Color } -> Shape
+{-| creates a shape from a list of triangles
+-}
+fromTriangles : List Triangle -> Shape
 fromTriangles list =
     list
         |> Internal.Shape.TrianglesForm
         |> Internal.Shape.new
 
 
+{-| Turns a shape into a WebGL entity
+-}
 toWebGL : { seed : Int, dimensions : Dimensions, palette : Palette } -> Shape -> WebGL.Entity
 toWebGL { seed, dimensions, palette } shape =
     let
@@ -249,6 +269,8 @@ toWebGL { seed, dimensions, palette } shape =
         }
 
 
+{-| Turns a Shape into a renderable Canvas element
+-}
 toCanvas : Dimensions -> Shape -> List Canvas.Renderable
 toCanvas dimensions shape =
     let
@@ -295,6 +317,8 @@ toCanvas dimensions shape =
                     )
 
 
+{-| Turns a Shape into a Svg element
+-}
 toSvg : Shape -> List (Svg msg)
 toSvg shape =
     let
@@ -322,7 +346,7 @@ toSvg shape =
                 [] ->
                     Nothing
     in
-    (case shape.form of
+    case shape.form of
         Internal.Shape.PathsForm list ->
             list
                 |> List.filterMap
@@ -367,6 +391,3 @@ toSvg shape =
                                         []
                                 )
                     )
-    )
-        |> Svg.svg []
-        |> List.singleton
