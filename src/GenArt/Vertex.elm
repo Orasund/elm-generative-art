@@ -35,24 +35,31 @@ rect ( x1, y1 ) ( x2, y2 ) =
 -}
 circle : Float -> ( Float, Float ) -> List ( Float, Float )
 circle radius p =
-    regularPolygon { points = 2 * pi * radius / 0.05 |> round |> max 10, radius = radius, angleOffset = 0 } p
+    regularPolygon { points = 2 * pi * radius / 0.05 |> round |> max 20, radius = radius, angleOffset = 0 } p
 
 
 {-| Constructs a stencil of a circle using the circle function as a basis.
 -}
-circleStencil : Float -> ( Float, Float ) -> List ( ( Float, Float ), List ( Float, Float ) )
-circleStencil radius ( x, y ) =
-    [ { angleOffset = 0, list = [ ( x, 1 ), ( 1, 1 ), ( 1, y ) ], p = ( 1, 1 ) }
-    , { angleOffset = 1 / 4, list = [ ( -1, y ), ( -1, 1 ), ( x, 1 ) ], p = ( -1, 1 ) }
-    , { angleOffset = 2 / 4, list = [ ( x, -1 ), ( -1, -1 ), ( -1, y ) ], p = ( -1, -1 ) }
-    , { angleOffset = 3 / 4, list = [ ( 1, y ), ( 1, -1 ), ( x, -1 ) ], p = ( 1, -1 ) }
+circleStencil : { radius : Float, min : ( Float, Float ), max : ( Float, Float ) } -> ( Float, Float ) -> List ( ( Float, Float ), List ( Float, Float ) )
+circleStencil args ( x, y ) =
+    let
+        ( minX, minY ) =
+            args.min
+
+        ( maxX, maxY ) =
+            args.max
+    in
+    [ { angleOffset = 0, list = [ ( x, maxY ), ( maxX, maxY ), ( maxX, y ) ], p = ( maxX, maxY ) }
+    , { angleOffset = 1 / 4, list = [ ( minX, y ), ( minX, maxY ), ( x, maxY ) ], p = ( minX, maxY ) }
+    , { angleOffset = 2 / 4, list = [ ( x, minY ), ( minX, minY ), ( minX, y ) ], p = ( minX, minY ) }
+    , { angleOffset = 3 / 4, list = [ ( maxX, y ), ( maxX, minY ), ( x, minY ) ], p = ( maxX, minY ) }
     ]
         |> List.map
             (\{ angleOffset, list, p } ->
                 ( p
                 , arc
                     { points = 20
-                    , radius = radius
+                    , radius = args.radius
                     , angle = pi / 2
                     , angleOffset = angleOffset * 2 * pi
                     }

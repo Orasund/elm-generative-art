@@ -146,7 +146,7 @@ line args list =
 
 {-| If the points are convex, then no center point is needed to convert into triangles.
 -}
-convexVertex : Color -> List ( Float, Float ) -> List { form : ( ( Float, Float ), ( Float, Float ), ( Float, Float ) ), color : Color }
+convexVertex : Color -> List ( Float, Float ) -> List Triangle
 convexVertex color l =
     (case l of
         a :: b :: _ ->

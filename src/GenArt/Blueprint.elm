@@ -124,11 +124,11 @@ rendering r =
         }
 
 
-fromShape : Generator (List Shape) -> Blueprint {} {} Shape
+fromShape : (Palette -> Generator (List Shape)) -> Blueprint {} {} Shape
 fromShape view =
     rendering
         { config = Random.constant {}
-        , view = \_ _ -> view
+        , view = \_ { palette } -> view palette
         }
 
 
