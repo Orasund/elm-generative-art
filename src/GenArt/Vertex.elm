@@ -58,7 +58,7 @@ circleStencil args ( x, y ) =
             (\{ angleOffset, list, p } ->
                 ( p
                 , arc
-                    { points = 20
+                    { points = 35
                     , radius = args.radius
                     , angle = pi / 2
                     , angleOffset = angleOffset * 2 * pi
