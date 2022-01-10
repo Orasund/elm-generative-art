@@ -1,10 +1,8 @@
 module GenArt.Blueprint exposing
     ( Blueprint
     , BlueprintState
-    , ImageProperties
     , IteratedState
     , RenderingState
-    , Stateless
     , from1
     , from2
     , from3
@@ -24,11 +22,6 @@ import GenArt.Shape exposing (Shape)
 import Internal.Union as Union exposing (Union1, Union2, Union3, Union4, Union5)
 import Random exposing (Generator)
 import Simplex exposing (PermutationTable)
-
-
-type alias ImageProperties =
-    { palette : Palette
-    }
 
 
 type alias BlueprintState config =
@@ -55,14 +48,7 @@ type alias Blueprint config model form =
     { randomConfig : Generator { config : config, maxRecursions : Int }
     , init : config -> Generator model
     , update : BlueprintState config -> model -> Generator (List model)
-    , view : BlueprintState config -> ImageProperties -> model -> Generator (List form)
-    , toShape : config -> List form -> List Shape
-    }
-
-
-type alias Stateless config form =
-    { randomConfig : Generator { config : config, maxSteps : Int }
-    , view : IteratedState config -> ImageProperties -> Generator (List form)
+    , view : BlueprintState config -> Palette -> model -> Generator (List form)
     , toShape : config -> List form -> List Shape
     }
 
@@ -71,7 +57,7 @@ iterated :
     { randomConfig : Generator { config : config, maxSteps : Int }
     , init : config -> Generator model
     , update : IteratedState config -> model -> Generator model
-    , view : IteratedState config -> ImageProperties -> model -> Generator (List form)
+    , view : IteratedState config -> Palette -> model -> Generator (List form)
     , toShape : config -> List form -> List Shape
     }
     -> Blueprint config model form
@@ -105,7 +91,7 @@ iterated blueprint =
 
 rendering :
     { randomConfig : Generator config
-    , view : RenderingState config -> ImageProperties -> Generator (List Shape)
+    , view : RenderingState config -> Palette -> Generator (List Shape)
     }
     -> Blueprint config {} Shape
 rendering r =
@@ -128,7 +114,7 @@ fromShape : (Palette -> Generator (List Shape)) -> Blueprint {} {} Shape
 fromShape view =
     rendering
         { randomConfig = Random.constant {}
-        , view = \_ { palette } -> view palette
+        , view = \_ -> view
         }
 
 
@@ -136,9 +122,9 @@ mapPalette : (Palette -> Palette) -> Blueprint config model form -> Blueprint co
 mapPalette fun animation =
     { animation
         | view =
-            \state imageProperties ->
+            \state palette ->
                 animation.view state
-                    { imageProperties | palette = fun imageProperties.palette }
+                    (fun palette)
     }
 
 

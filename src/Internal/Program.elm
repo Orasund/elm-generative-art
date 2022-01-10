@@ -168,8 +168,7 @@ createShapes m =
                     , maxRecursions = m.maxRecursions
                     , permutationTable = m.permutationTable
                     }
-                    { palette = m.palette
-                    }
+                    m.palette
 
         [] ->
             Random.constant []
