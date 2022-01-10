@@ -127,7 +127,7 @@ initRunning { program, palette, blueprints, initialSeed } shapes =
     in
     case blueprints of
         head :: _ ->
-            head.config
+            head.randomConfig
                 |> Random.andThen
                     (\{ config, maxRecursions } ->
                         Random.map2

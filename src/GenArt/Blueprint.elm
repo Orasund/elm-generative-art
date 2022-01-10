@@ -52,7 +52,7 @@ type alias RenderingState config =
 
 
 type alias Blueprint config model form =
-    { config : Generator { config : config, maxRecursions : Int }
+    { randomConfig : Generator { config : config, maxRecursions : Int }
     , init : config -> Generator model
     , update : BlueprintState config -> model -> Generator (List model)
     , view : BlueprintState config -> ImageProperties -> model -> Generator (List form)
@@ -61,14 +61,14 @@ type alias Blueprint config model form =
 
 
 type alias Stateless config form =
-    { config : Generator { config : config, maxSteps : Int }
+    { randomConfig : Generator { config : config, maxSteps : Int }
     , view : IteratedState config -> ImageProperties -> Generator (List form)
     , toShape : config -> List form -> List Shape
     }
 
 
 iterated :
-    { config : Generator { config : config, maxSteps : Int }
+    { randomConfig : Generator { config : config, maxSteps : Int }
     , init : config -> Generator model
     , update : IteratedState config -> model -> Generator model
     , view : IteratedState config -> ImageProperties -> model -> Generator (List form)
@@ -76,8 +76,8 @@ iterated :
     }
     -> Blueprint config model form
 iterated blueprint =
-    { config =
-        blueprint.config
+    { randomConfig =
+        blueprint.randomConfig
             |> Random.map (\{ config, maxSteps } -> { config = config, maxRecursions = maxSteps })
     , init = blueprint.init
     , update =
@@ -104,13 +104,13 @@ iterated blueprint =
 
 
 rendering :
-    { config : Generator config
+    { randomConfig : Generator config
     , view : RenderingState config -> ImageProperties -> Generator (List Shape)
     }
     -> Blueprint config {} Shape
 rendering r =
     iterated
-        { config = r.config |> Random.map (\config -> { config = config, maxSteps = 1 })
+        { randomConfig = r.randomConfig |> Random.map (\config -> { config = config, maxSteps = 1 })
         , init = \_ -> Random.constant {}
         , update = \_ model -> Random.constant model
         , view =
@@ -127,7 +127,7 @@ rendering r =
 fromShape : (Palette -> Generator (List Shape)) -> Blueprint {} {} Shape
 fromShape view =
     rendering
-        { config = Random.constant {}
+        { randomConfig = Random.constant {}
         , view = \_ { palette } -> view palette
         }
 
@@ -145,8 +145,8 @@ mapPalette fun animation =
 mapConfig : (config -> config) -> Blueprint config model form -> Blueprint config model form
 mapConfig fun animation =
     { animation
-        | config =
-            animation.config
+        | randomConfig =
+            animation.randomConfig
                 |> Random.map
                     (\{ config, maxRecursions } ->
                         { maxRecursions = maxRecursions
@@ -162,8 +162,8 @@ mapRandomConfig :
     -> Blueprint config model form
 mapRandomConfig fun animation =
     { animation
-        | config =
-            animation.config
+        | randomConfig =
+            animation.randomConfig
                 |> Random.andThen
                     (\{ config, maxRecursions } ->
                         fun config
@@ -195,7 +195,7 @@ map args anim =
 
                 Nothing ->
                     Random.step
-                        anim.config
+                        anim.randomConfig
                         (Random.initialSeed 0)
                         |> Tuple.first
                         |> .config
@@ -207,15 +207,15 @@ map args anim =
 
                 Nothing ->
                     Random.step
-                        (anim.config
+                        (anim.randomConfig
                             |> Random.map .config
                             |> Random.andThen anim.init
                         )
                         (Random.initialSeed 0)
                         |> Tuple.first
     in
-    { config =
-        anim.config
+    { randomConfig =
+        anim.randomConfig
             |> Random.map (\a -> { config = args.configTo a.config, maxRecursions = a.maxRecursions })
     , init =
         \config ->
