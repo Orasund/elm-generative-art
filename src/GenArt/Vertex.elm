@@ -31,11 +31,11 @@ rect ( x1, y1 ) ( x2, y2 ) =
     [ ( x1, y1 ), ( x1, y2 ), ( x2, y2 ), ( x2, y1 ) ]
 
 
-{-| Constructs a circle by a given radius and point. The amount of points used depends directly on the radius.
+{-| Constructs a circle by a given radius and point. It will construct a polygon with 40 sides.
 -}
 circle : Float -> ( Float, Float ) -> List ( Float, Float )
 circle radius p =
-    regularPolygon { points = 2 * pi * radius / 0.05 |> round |> max 20, radius = radius, angleOffset = 0 } p
+    regularPolygon { points = 40, radius = radius, angleOffset = 0 } p
 
 
 {-| Constructs a stencil of a circle using the circle function as a basis.

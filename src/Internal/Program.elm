@@ -189,8 +189,6 @@ viewCanvas dimensions model =
                             ]
 
                 WebGL ->
-                    --forms
-                    --++
                     shapes
                         ++ forms
                         |> List.map
@@ -304,7 +302,11 @@ update msg model =
                     if m.current.recursion >= m.maxRecursions then
                         case m.stack of
                             head :: tail ->
-                                ( Running { m | current = head, stack = tail }, Cmd.none )
+                                ( { m | current = head, stack = tail }
+                                    |> addShape m.program.target
+                                    |> Running
+                                , Cmd.none
+                                )
 
                             [] ->
                                 ( initRunning
