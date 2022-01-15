@@ -12,6 +12,7 @@ module GenArt.Blueprint exposing
     , iterated
     , map
     , mapConfig
+    , mapMaxRecursion
     , mapPalette
     , mapRandomConfig
     , rendering
@@ -129,14 +130,28 @@ mapPalette fun animation =
 
 
 mapConfig : (config -> config) -> Blueprint config model form -> Blueprint config model form
-mapConfig fun animation =
-    { animation
+mapConfig fun blueprint =
+    { blueprint
         | randomConfig =
-            animation.randomConfig
+            blueprint.randomConfig
                 |> Random.map
                     (\{ config, maxRecursions } ->
                         { maxRecursions = maxRecursions
                         , config = fun config
+                        }
+                    )
+    }
+
+
+mapMaxRecursion : (Int -> Int) -> Blueprint config model form -> Blueprint config model form
+mapMaxRecursion fun blueprint =
+    { blueprint
+        | randomConfig =
+            blueprint.randomConfig
+                |> Random.map
+                    (\{ config, maxRecursions } ->
+                        { maxRecursions = fun maxRecursions
+                        , config = config
                         }
                     )
     }
