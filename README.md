@@ -14,3 +14,4 @@ Both a Elm package for creating generative art and a collection of everything to
 - [Generate random points using Poisson Disk Sampling](https://sighack.com/post/poisson-disk-sampling-bridsons-algorithm)
 - [Alternative Triangulation approach](https://teaboswell.ghost.io/experimenting-with-v/)
 - [Voroni Tessellation](https://georgefrancis.dev/writing/crafting-organic-patterns-with-voronoi-tessellations/)
+- [Reaction-Diffusion](https://www.karlsims.com/rd.html)

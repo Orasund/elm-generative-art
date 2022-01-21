@@ -77,11 +77,8 @@ lineRec :
     -> List ( ( Float, Float ), ( Float, Float ), ( Float, Float ) )
 lineRec width { from, pLeft, pRight } list acc =
     case list of
-        c :: tail ->
+        center :: tail ->
             let
-                center =
-                    c
-
                 v1 =
                     center |> Point.vecTo from |> Vector.toPolar
 
@@ -171,7 +168,7 @@ lineRec width { from, pLeft, pRight } list acc =
 
                                     else
                                         angle2 + pi
-                                , length = width / 2 --length2
+                                , length = width / 2
                                 }
                             )
 

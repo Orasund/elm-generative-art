@@ -111,6 +111,9 @@ path color list =
 
 {-| constructs a line from a list of points and returns a list of triangles.
 It constructs roughly 4 triangles per line segment, so if a lot of lines need to be drawn it might be better to use a path instead.
+
+Note: It currently has a bug when drawing arcs.
+
 -}
 line : { width : Float, color : Color } -> List ( Float, Float ) -> List Triangle
 line args list =
