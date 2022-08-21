@@ -27,7 +27,12 @@ type alias Uniforms =
     , u_trinary : Vec4
     , u_seed : Float
     , u_pixel_args : Vec4
+    , u_point_size : Float
     }
+
+
+type alias Point =
+    { form : ( Float, Float ), color : Color }
 
 
 type alias Path =
@@ -48,7 +53,8 @@ type alias Shape =
 
 
 type Form
-    = PathsForm (List Path)
+    = PointsForm Float (List Point)
+    | PathsForm (List Path)
     | TrianglesForm (List Triangle)
 
 

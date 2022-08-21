@@ -1,5 +1,6 @@
 module GenArt.Shape exposing
     ( Path
+    , Point
     , Shape
     , Triangle
     , Uniforms
@@ -7,6 +8,7 @@ module GenArt.Shape exposing
     , Vertex
     , convexVertex
     , fromPaths
+    , fromPoints
     , fromTriangles
     , line
     , path
@@ -40,6 +42,12 @@ import WebGL exposing (Shader)
 import WebGL.Settings.Blend as Blend
 
 
+{-| A point
+-}
+type alias Point =
+    { form : ( Float, Float ), color : Color }
+
+
 {-| A path represented as a record. Usually you would pass it right along to `fromPaths`.
 -}
 type alias Path =
@@ -67,6 +75,7 @@ type alias Uniforms =
     , u_trinary : Vec4
     , u_seed : Float
     , u_pixel_args : Vec4
+    , u_point_size : Float
     }
 
 
@@ -196,6 +205,13 @@ starVertex a color l =
         |> Internal.Shape.withColor color
 
 
+fromPoints : Float -> List Point -> Shape
+fromPoints size list =
+    list
+        |> Internal.Shape.PointsForm size
+        |> Internal.Shape.new
+
+
 {-| creates a Shape from a list of paths.
 -}
 fromPaths : List Path -> Shape
@@ -231,6 +247,11 @@ toWebGL { seed, dimensions, palette } shape =
 
         mesh =
             case shape.form of
+                Internal.Shape.PointsForm _ list ->
+                    list
+                        |> List.map (\{ form, color } -> toVertex color form)
+                        |> WebGL.points
+
                 Internal.Shape.PathsForm list ->
                     list
                         |> List.concatMap
@@ -269,6 +290,7 @@ toWebGL { seed, dimensions, palette } shape =
             Random.step (Random.float 0 1) (Random.initialSeed seed)
                 |> Tuple.first
         , u_pixel_args = shape.pixelArguments
+        , u_point_size = 0
         }
 
 
@@ -281,6 +303,18 @@ toCanvas dimensions shape =
             ( (1 + x) * dimensions.width / 2, (1 - y) * dimensions.height / 2 )
     in
     case shape.form of
+        Internal.Shape.PointsForm size list ->
+            list
+                |> List.concatMap
+                    (\{ form, color } ->
+                        Canvas.circle form size
+                            |> List.singleton
+                            |> Canvas.shapes
+                                [ Settings.stroke color
+                                ]
+                            |> List.singleton
+                    )
+
         Internal.Shape.PathsForm list ->
             list
                 |> List.concatMap
@@ -350,6 +384,29 @@ toSvg shape =
                     Nothing
     in
     case shape.form of
+        Internal.Shape.PointsForm size list ->
+            list
+                |> List.map
+                    (\{ form, color } ->
+                        let
+                            ( x, y ) =
+                                form
+                        in
+                        Svg.circle
+                            [ x
+                                |> String.fromFloat
+                                |> Svg.Attributes.cx
+                            , y
+                                |> String.fromFloat
+                                |> Svg.Attributes.cy
+                            , size |> String.fromFloat |> Svg.Attributes.r
+                            , color
+                                |> Color.toCssString
+                                |> Svg.Attributes.stroke
+                            ]
+                            []
+                    )
+
         Internal.Shape.PathsForm list ->
             list
                 |> List.filterMap
